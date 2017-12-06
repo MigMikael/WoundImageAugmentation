@@ -1,8 +1,6 @@
 from cntk.device import try_set_default_device, gpu
 import numpy as np
-import sys
 import os
-import math
 import cntk
 import cntk.learners
 import time
@@ -31,6 +29,7 @@ class ColorCalibrationModel:
         self.reader_train = None
         self.reader_test = None
         self.input_map = None
+        self.file_name = None
 
     def create_reader(self, path, is_training, input_dim, num_label_class):
         label_stream = cntk.io.StreamDef(field='labels', shape=num_label_class, is_sparse=False)
@@ -122,10 +121,11 @@ class ColorCalibrationModel:
 
         plotdata = {"batchsize": [], "loss": [], "error": []}
 
-        data_path = './train_result/'
+        data_path = './Output/'
         name = 'result-'
         file_extension = '.txt'
         file_name = data_path + name + str(time.ctime()) + file_extension
+        self.file_name = file_name
         with open(file_name, 'a') as outfile:
             outfile.write("hidden_layer_dim = " + str(self.hidden_layers_dim) + "\n")
             outfile.write("hidden_layer_num = 3\n")
@@ -152,7 +152,10 @@ class ColorCalibrationModel:
         test_minibatch_size = 200
         num_samples = 2646
         num_minibatches_to_test = num_samples // test_minibatch_size
-        test_result = 0.0
+
+        max_R = 0
+        max_G = 0
+        max_B = 0
 
         for i in range(num_minibatches_to_test):
             data = self.reader_test.next_minibatch(test_minibatch_size, input_map=test_input_map)
@@ -166,11 +169,52 @@ class ColorCalibrationModel:
             print(post_temp)
             print()
 
-            eval_error = self.trainer.test_minibatch(data)
-            test_result = test_result + eval_error
+            pre_temp = data[self.input].asarray()[0]
+            print("Features --------------------")
+            pre_temp[0] = [int(x) for x in pre_temp[0]]
+            print(pre_temp[0])
+
+            post_temp = data[self.label].asarray()[0]
+            print("Labels -----------------------")
+            post_temp[0] = [int(x) for x in post_temp[0]]
+            print(post_temp[0])
+
+            prediction = self.z.eval(pre_temp[0])
+            prediction_float = np.float32(prediction[0])
+            # print(prediction_float)
+            v = [int(round(elem)) for elem in prediction_float]
+            print("Predict -----------------------")
+            print(v)
+
+            rest = abs(v - post_temp[0])
+            print("--------------------------------")
+            print(rest)
+            with open(self.file_name, 'a') as outfile:
+                outfile.write(rest)
+
+            for index, item in enumerate(rest):
+                p = (item / post_temp[0][index]) * 100
+                print(str(round(p, 2)) + "%")
+                with open(self.file_name, 'a') as outfile:
+                    outfile.write(str(index) + " " + str(round(p, 2)) + "%" + "\n")
+
+            print()
+
+            if (rest[0] > max_R):
+                max_R = rest[0]
+
+            if (rest[1] > max_G):
+                max_G = rest[1]
+
+            if (rest[2] > max_B):
+                max_B = rest[2]
+
+        print("max R G B : ", max_R, max_G, max_B)
+        with open(self.file_name, 'a') as outfile:
+            outfile.write("max R G B : " + str(max_R) + " " + str(max_G) + " " + str(max_B) + " \n")
 
         # Average of evaluation errors of all test minibatches
-        print("Average test error (ratio error): {0:.2f}%".format((test_result * 100 / num_minibatches_to_test) / num_samples))
+        # print("Average test error (ratio error): {0:.2f}%".format((test_result * 100 / num_minibatches_to_test) / num_samples))
 
     def start(self):
         self.file_reader()
