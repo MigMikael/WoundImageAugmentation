@@ -216,6 +216,9 @@ class ColorCalibrationModel:
         # Average of evaluation errors of all test minibatches
         # print("Average test error (ratio error): {0:.2f}%".format((test_result * 100 / num_minibatches_to_test) / num_samples))
 
+    def save_model(self, path):
+        self.z.save(path)
+
     def start(self):
         self.file_reader()
         self.config_parameter()
