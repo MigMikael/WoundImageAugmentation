@@ -213,9 +213,6 @@ class ColorCalibrationModel:
         with open(self.file_name, 'a') as outfile:
             outfile.write("max R G B : " + str(max_R) + " " + str(max_G) + " " + str(max_B) + " \n")
 
-        # Average of evaluation errors of all test minibatches
-        # print("Average test error (ratio error): {0:.2f}%".format((test_result * 100 / num_minibatches_to_test) / num_samples))
-
     def save_model(self, path):
         self.z.save(path)
 
