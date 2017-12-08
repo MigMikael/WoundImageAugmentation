@@ -25,18 +25,20 @@ class ColorCalibrationModel:
         self.learner = None
         self.trainer = None
         self.minibatch_size = None
+        self.num_train_samples_per_sweep = None
         self.num_minibatches_to_train = None
         self.reader_train = None
         self.reader_test = None
         self.input_map = None
         self.file_name = None
+        self.num_test_samples = None
 
     def create_reader(self, path, is_training, input_dim, num_label_class):
         label_stream = cntk.io.StreamDef(field='labels', shape=num_label_class, is_sparse=False)
         feature_stream = cntk.io.StreamDef(field='features', shape=input_dim, is_sparse=False)
         deserailizer = cntk.io.CTFDeserializer(path, cntk.io.StreamDefs(labels=label_stream, features=feature_stream))
 
-        return cntk.io.MinibatchSource(deserailizer, randomize=is_training, max_sweeps=cntk.io.INFINITELY_REPEAT if is_training else 1, randomization_window_in_chunks=2646)
+        return cntk.io.MinibatchSource(deserailizer, randomize=is_training, max_sweeps=cntk.io.INFINITELY_REPEAT if is_training else 1, randomization_window_in_chunks=259308)
 
     def file_reader(self):
         data_found = False
@@ -74,25 +76,27 @@ class ColorCalibrationModel:
         self.input = cntk.input_variable(self.input_dim)
         self.label = cntk.input_variable(self.num_label_classes)
 
-        self.hidden_layers_dim = 9
+        self.hidden_layers_dim = 12
         self.z = self.create_model(self.input, self.hidden_layers_dim)
         self.loss = cntk.squared_error(self.z, self.label) #
 
         self.learning_rate = 0.00002
         self.lr_schedule = cntk.learning_rate_schedule(self.learning_rate, cntk.UnitType.minibatch)
 
-        self.learner = cntk.sgd(self.z.parameter, self.lr_schedule)
+        self.learner = cntk.sgd(self.z.parameters, self.lr_schedule)
         self.trainer = cntk.Trainer(self.z, (self.loss, self.loss), [self.learner])
 
-        self.minibatch_size = 200
-        num_samples_per_sweep = 259308
+        self.minibatch_size = 300
+        self.num_train_samples_per_sweep = 259308
         num_sweeps_to_train_with = 10
-        self.num_minibatches_to_train = (num_samples_per_sweep * num_sweeps_to_train_with) / self.minibatch_size
+        self.num_minibatches_to_train = (self.num_train_samples_per_sweep * num_sweeps_to_train_with) / self.minibatch_size
+        
+        self.num_test_samples = 2646
 
         self.reader_train = self.create_reader(self.train_file, True, self.input_dim, self.num_label_classes)
         self.input_map = {
             self.label: self.reader_train.streams.labels,
-            self.input: self.reader_train.features
+            self.input: self.reader_train.streams.features
         }
 
     def moving_averate(self, a, w=5):
@@ -121,16 +125,17 @@ class ColorCalibrationModel:
 
         plotdata = {"batchsize": [], "loss": [], "error": []}
 
-        data_path = './Output/'
+        data_path = '../Output/'
         name = 'result-'
         file_extension = '.txt'
         file_name = data_path + name + str(time.ctime()) + file_extension
         self.file_name = file_name
         with open(file_name, 'a') as outfile:
             outfile.write("hidden_layer_dim = " + str(self.hidden_layers_dim) + "\n")
-            outfile.write("hidden_layer_num = 3\n")
             outfile.write("learning_rate = " + str(self.learning_rate) + "\n")
             outfile.write("minibatch_size = " + str(self.minibatch_size) + "\n")
+            outfile.write("num_train_samples_per_sweep = " + str(self.num_train_samples_per_sweep) + "\n")
+            outfile.write("num_test_samples = " + str(self.num_test_samples) + "\n")
 
         for i in range(0, int(self.num_minibatches_to_train)):
             data = self.reader_train.next_minibatch(self.minibatch_size, input_map=self.input_map)
@@ -142,16 +147,15 @@ class ColorCalibrationModel:
                 plotdata["loss"].append(loss)
                 plotdata["error"].append(error)
 
-    def run_testing(self):
+    def run_tester(self):
         self.reader_test = self.create_reader(self.test_file, False, self.input_dim, self.num_label_classes)
         test_input_map = {
             self.label: self.reader_test.streams.labels,
             self.input: self.reader_test.streams.features,
         }
 
-        test_minibatch_size = 200
-        num_samples = 2646
-        num_minibatches_to_test = num_samples // test_minibatch_size
+        test_minibatch_size = 1
+        num_minibatches_to_test = self.num_test_samples // test_minibatch_size
 
         max_R = 0
         max_G = 0
@@ -189,16 +193,20 @@ class ColorCalibrationModel:
             rest = abs(v - post_temp[0])
             print("--------------------------------")
             print(rest)
+            rest = rest.tolist()
+            #print(type(rest))
             with open(self.file_name, 'a') as outfile:
-                outfile.write(rest)
-
+                    outfile.write(str(rest) + "\n")
+            
             for index, item in enumerate(rest):
                 p = (item / post_temp[0][index]) * 100
                 print(str(round(p, 2)) + "%")
                 with open(self.file_name, 'a') as outfile:
-                    outfile.write(str(index) + " " + str(round(p, 2)) + "%" + "\n")
+                    outfile.write(str(index+1) + ". " + str(round(p, 2)) + "%" + "\n")
 
             print()
+            with open(self.file_name, 'a') as outfile:
+                    outfile.write("\n")
 
             if (rest[0] > max_R):
                 max_R = rest[0]
@@ -220,4 +228,4 @@ class ColorCalibrationModel:
         self.file_reader()
         self.config_parameter()
         self.run_trainer()
-        self.run_testing()
+        self.run_tester()
