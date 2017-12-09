@@ -4,6 +4,7 @@ import os
 import cntk
 import cntk.learners
 import time
+import math
 
 
 class ColorCalibrationModel:
@@ -70,28 +71,28 @@ class ColorCalibrationModel:
             cntk.logging.log_number_of_parameters(r)
             return r
 
-    def config_parameter(self):
+    def config_parameter(self, hidden_layers_dim, learning_rate, minibatch_size, num_train_samples_per_sweep, num_test_samples):
         self.input_dim = 3
         self.num_label_classes = 3
         self.input = cntk.input_variable(self.input_dim)
         self.label = cntk.input_variable(self.num_label_classes)
 
-        self.hidden_layers_dim = 12
+        self.hidden_layers_dim = hidden_layers_dim
         self.z = self.create_model(self.input, self.hidden_layers_dim)
         self.loss = cntk.squared_error(self.z, self.label) #
 
-        self.learning_rate = 0.00002
+        self.learning_rate = learning_rate
         self.lr_schedule = cntk.learning_rate_schedule(self.learning_rate, cntk.UnitType.minibatch)
 
         self.learner = cntk.sgd(self.z.parameters, self.lr_schedule)
         self.trainer = cntk.Trainer(self.z, (self.loss, self.loss), [self.learner])
 
-        self.minibatch_size = 300
-        self.num_train_samples_per_sweep = 259308
+        self.minibatch_size = minibatch_size
+        self.num_train_samples_per_sweep = num_train_samples_per_sweep
         num_sweeps_to_train_with = 10
         self.num_minibatches_to_train = (self.num_train_samples_per_sweep * num_sweeps_to_train_with) / self.minibatch_size
         
-        self.num_test_samples = 2646
+        self.num_test_samples = num_test_samples
 
         self.reader_train = self.create_reader(self.train_file, True, self.input_dim, self.num_label_classes)
         self.input_map = {
@@ -160,6 +161,14 @@ class ColorCalibrationModel:
         max_R = 0
         max_G = 0
         max_B = 0
+        
+        sum_diff_R = 0
+        sum_diff_G = 0
+        sum_diff_B = 0
+        
+        diff_R_list = []
+        diff_G_list = []
+        diff_B_list = []
 
         for i in range(num_minibatches_to_test):
             data = self.reader_test.next_minibatch(test_minibatch_size, input_map=test_input_map)
@@ -216,16 +225,57 @@ class ColorCalibrationModel:
 
             if (rest[2] > max_B):
                 max_B = rest[2]
+                
+            sum_diff_R += rest[0]
+            sum_diff_G += rest[1]
+            sum_diff_B += rest[2]
+            
+            diff_R_list.append(rest[0])
+            diff_G_list.append(rest[1])
+            diff_B_list.append(rest[2])
 
-        print("max R G B : ", max_R, max_G, max_B)
+        print("max diff R G B : ", max_R, max_G, max_B)
         with open(self.file_name, 'a') as outfile:
-            outfile.write("max R G B : " + str(max_R) + " " + str(max_G) + " " + str(max_B) + " \n")
+            outfile.write("max diff R G B : " + str(max_R) + " " + str(max_G) + " " + str(max_B) + " \n")
+            
+        avg_diff_R = sum_diff_R / self.num_test_samples
+        avg_diff_G = sum_diff_G / self.num_test_samples
+        avg_diff_B = sum_diff_B / self.num_test_samples
+        
+        avg_diff_R = round(avg_diff_R, 4)
+        avg_diff_G = round(avg_diff_G, 4)
+        avg_diff_B = round(avg_diff_B, 4)
+        
+        print("avg diff R G B : ", avg_diff_R, avg_diff_G, avg_diff_B)
+        with open(self.file_name, 'a') as outfile:
+            outfile.write("avg diff R G B : " + str(avg_diff_R) + " " + str(avg_diff_G) + " " + str(avg_diff_B) + " \n")
+            
+        R_sd = self.cal_standard_deviation(diff_R_list, avg_diff_R)
+        G_sd = self.cal_standard_deviation(diff_G_list, avg_diff_G)
+        B_sd = self.cal_standard_deviation(diff_B_list, avg_diff_B)
+        
+        R_sd = round(R_sd, 4)
+        G_sd = round(G_sd, 4)
+        B_sd = round(B_sd, 4)
+        
+        print("Standard Deviation diff R G B : ", R_sd ,G_sd ,B_sd)
+        with open(self.file_name, 'a') as outfile:
+            outfile.write("Standard Deviation diff R G B : " + str(R_sd) + " " + str(G_sd) + " " + str(B_sd) + "\n")
 
     def save_model(self, path):
         self.z.save(path)
+        
+    def cal_standard_deviation(self, diff_list, avg):
+        summ = 0
+        for i in diff_list:
+            t = (i - avg)*(i - avg)
+            summ += t
+        sd = math.sqrt(summ/len(diff_list))
+        #print(len(diff_list))
+        return sd
 
-    def start(self):
+    def start(self, hidden_layers_dim, learning_rate, minibatch_size, num_train_samples_per_sweep, num_test_samples):
         self.file_reader()
-        self.config_parameter()
+        self.config_parameter(hidden_layers_dim, learning_rate, minibatch_size, num_train_samples_per_sweep, num_test_samples)
         self.run_trainer()
         self.run_tester()
