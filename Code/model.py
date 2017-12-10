@@ -3,7 +3,6 @@ import numpy as np
 import os
 import cntk
 import cntk.learners
-import time
 import math
 
 
@@ -53,9 +52,9 @@ class ColorCalibrationModel:
             if not data_found:
                 raise ValueError("Your data file is not available. it should be in Data folder")
 
-        print("Data Dir is {0}".format(data_dir))
-        print("Train Data path is " + self.train_file)
-        print("Test Data path is " + self.test_file)
+        #print("Data Dir is {0}".format(data_dir))
+        #print("Train Data path is " + self.train_file)
+        #print("Test Data path is " + self.test_file)
 
     def create_model(self, features, hidden_layers_dim):
         with cntk.layers.default_options(init=cntk.glorot_uniform(), activation=cntk.ops.relu):
@@ -68,10 +67,10 @@ class ColorCalibrationModel:
             h = cntk.layers.Dense(hidden_layers_dim, activation=cntk.relu)(h)
             h = cntk.layers.BatchNormalization(map_rank=1)(h)
             r = cntk.layers.Dense(self.num_label_classes, activation=None)(h)
-            cntk.logging.log_number_of_parameters(r)
+            #cntk.logging.log_number_of_parameters(r)
             return r
 
-    def config_parameter(self, hidden_layers_dim, learning_rate, minibatch_size, num_train_samples_per_sweep, num_test_samples):
+    def config_parameter(self, hidden_layers_dim, learning_rate, minibatch_size, num_train_samples_per_sweep, num_test_samples, result_file_name):
         self.input_dim = 3
         self.num_label_classes = 3
         self.input = cntk.input_variable(self.input_dim)
@@ -93,6 +92,7 @@ class ColorCalibrationModel:
         self.num_minibatches_to_train = (self.num_train_samples_per_sweep * num_sweeps_to_train_with) / self.minibatch_size
         
         self.num_test_samples = num_test_samples
+        self.file_name = result_file_name     # Name of result file
 
         self.reader_train = self.create_reader(self.train_file, True, self.input_dim, self.num_label_classes)
         self.input_map = {
@@ -113,7 +113,7 @@ class ColorCalibrationModel:
             training_loss = trainer.previous_minibatch_loss_average
             eval_error = trainer.previous_minibatch_evaluation_average
             if verbose:
-                print("Minibatch: {0}, Loss: {1:.4f}, Error: {2:.2f}%".format(mb, training_loss, eval_error * 100))
+                #print("Minibatch: {0}, Loss: {1:.4f}, Error: {2:.2f}%".format(mb, training_loss, eval_error * 100))
                 with open(file_name, 'a') as outfile:
                     outfile.write(
                         "Minibatch: {0}, Loss: {1:.4f}, Error: {2:.2f}% \n".format(mb, training_loss, eval_error * 100))
@@ -126,12 +126,7 @@ class ColorCalibrationModel:
 
         plotdata = {"batchsize": [], "loss": [], "error": []}
 
-        data_path = '../Output/'
-        name = 'result-'
-        file_extension = '.txt'
-        file_name = data_path + name + str(time.ctime()) + file_extension
-        self.file_name = file_name
-        with open(file_name, 'a') as outfile:
+        with open(self.file_name, 'a') as outfile:
             outfile.write("hidden_layer_dim = " + str(self.hidden_layers_dim) + "\n")
             outfile.write("learning_rate = " + str(self.learning_rate) + "\n")
             outfile.write("minibatch_size = " + str(self.minibatch_size) + "\n")
@@ -142,7 +137,7 @@ class ColorCalibrationModel:
             data = self.reader_train.next_minibatch(self.minibatch_size, input_map=self.input_map)
             self.trainer.train_minibatch(data)
 
-            batchsize, loss, error = self.print_training_progress(self.trainer, i, training_progress_output_freq, verbose=1, file_name=file_name)
+            batchsize, loss, error = self.print_training_progress(self.trainer, i, training_progress_output_freq, verbose=1, file_name=self.file_name)
             if not (loss == "NA" or error == "NA"):
                 plotdata["batchsize"].append(batchsize)
                 plotdata["loss"].append(loss)
@@ -174,34 +169,34 @@ class ColorCalibrationModel:
             data = self.reader_test.next_minibatch(test_minibatch_size, input_map=test_input_map)
 
             pre_temp = data[self.input].asarray()[0]
-            print("Pre --------------------")
-            print(pre_temp)
+            #print("Pre --------------------")
+            #print(pre_temp)
 
             post_temp = data[self.label].asarray()[0]
-            print("Post --------------------")
-            print(post_temp)
-            print()
+            #print("Post --------------------")
+            #print(post_temp)
+            #print()
 
             pre_temp = data[self.input].asarray()[0]
-            print("Features --------------------")
+            #print("Features --------------------")
             pre_temp[0] = [int(x) for x in pre_temp[0]]
-            print(pre_temp[0])
+            #print(pre_temp[0])
 
             post_temp = data[self.label].asarray()[0]
-            print("Labels -----------------------")
+            #print("Labels -----------------------")
             post_temp[0] = [int(x) for x in post_temp[0]]
-            print(post_temp[0])
+            #print(post_temp[0])
 
             prediction = self.z.eval(pre_temp[0])
             prediction_float = np.float32(prediction[0])
             # print(prediction_float)
             v = [int(round(elem)) for elem in prediction_float]
-            print("Predict -----------------------")
-            print(v)
+            #print("Predict -----------------------")
+            #print(v)
 
             rest = abs(v - post_temp[0])
-            print("--------------------------------")
-            print(rest)
+            #print("--------------------------------")
+            #print(rest)
             rest = rest.tolist()
             #print(type(rest))
             with open(self.file_name, 'a') as outfile:
@@ -209,11 +204,11 @@ class ColorCalibrationModel:
             
             for index, item in enumerate(rest):
                 p = (item / post_temp[0][index]) * 100
-                print(str(round(p, 2)) + "%")
+                #print(str(round(p, 2)) + "%")
                 with open(self.file_name, 'a') as outfile:
                     outfile.write(str(index+1) + ". " + str(round(p, 2)) + "%" + "\n")
 
-            print()
+            #print()
             with open(self.file_name, 'a') as outfile:
                     outfile.write("\n")
 
@@ -234,7 +229,7 @@ class ColorCalibrationModel:
             diff_G_list.append(rest[1])
             diff_B_list.append(rest[2])
 
-        print("max diff R G B : ", max_R, max_G, max_B)
+        #print("max diff R G B : ", max_R, max_G, max_B)
         with open(self.file_name, 'a') as outfile:
             outfile.write("max diff R G B : " + str(max_R) + " " + str(max_G) + " " + str(max_B) + " \n")
             
@@ -246,7 +241,7 @@ class ColorCalibrationModel:
         avg_diff_G = round(avg_diff_G, 4)
         avg_diff_B = round(avg_diff_B, 4)
         
-        print("avg diff R G B : ", avg_diff_R, avg_diff_G, avg_diff_B)
+        #print("avg diff R G B : ", avg_diff_R, avg_diff_G, avg_diff_B)
         with open(self.file_name, 'a') as outfile:
             outfile.write("avg diff R G B : " + str(avg_diff_R) + " " + str(avg_diff_G) + " " + str(avg_diff_B) + " \n")
             
@@ -258,7 +253,7 @@ class ColorCalibrationModel:
         G_sd = round(G_sd, 4)
         B_sd = round(B_sd, 4)
         
-        print("Standard Deviation diff R G B : ", R_sd ,G_sd ,B_sd)
+        #print("Standard Deviation diff R G B : ", R_sd ,G_sd ,B_sd)
         with open(self.file_name, 'a') as outfile:
             outfile.write("Standard Deviation diff R G B : " + str(R_sd) + " " + str(G_sd) + " " + str(B_sd) + "\n")
 
@@ -274,8 +269,8 @@ class ColorCalibrationModel:
         #print(len(diff_list))
         return sd
 
-    def start(self, hidden_layers_dim, learning_rate, minibatch_size, num_train_samples_per_sweep, num_test_samples):
+    def start(self, hidden_layers_dim, learning_rate, minibatch_size, num_train_samples_per_sweep, num_test_samples, result_file_name):
         self.file_reader()
-        self.config_parameter(hidden_layers_dim, learning_rate, minibatch_size, num_train_samples_per_sweep, num_test_samples)
+        self.config_parameter(hidden_layers_dim, learning_rate, minibatch_size, num_train_samples_per_sweep, num_test_samples, result_file_name)
         self.run_trainer()
         self.run_tester()
