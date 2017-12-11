@@ -33,12 +33,12 @@ class ColorCalibrationModel:
         self.file_name = None
         self.num_test_samples = None
 
-    def create_reader(self, path, is_training, input_dim, num_label_class):
+    def create_reader(self, path, is_training, input_dim, num_label_class, random_in_chunks):
         label_stream = cntk.io.StreamDef(field='labels', shape=num_label_class, is_sparse=False)
         feature_stream = cntk.io.StreamDef(field='features', shape=input_dim, is_sparse=False)
         deserailizer = cntk.io.CTFDeserializer(path, cntk.io.StreamDefs(labels=label_stream, features=feature_stream))
 
-        return cntk.io.MinibatchSource(deserailizer, randomize=is_training, max_sweeps=cntk.io.INFINITELY_REPEAT if is_training else 1, randomization_window_in_chunks=259308)
+        return cntk.io.MinibatchSource(deserailizer, randomize=is_training, max_sweeps=cntk.io.INFINITELY_REPEAT if is_training else 1, randomization_window_in_chunks=random_in_chunks)
 
     def file_reader(self):
         data_found = False
@@ -94,7 +94,7 @@ class ColorCalibrationModel:
         self.num_test_samples = num_test_samples
         self.file_name = result_file_name     # Name of result file
 
-        self.reader_train = self.create_reader(self.train_file, True, self.input_dim, self.num_label_classes)
+        self.reader_train = self.create_reader(self.train_file, True, self.input_dim, self.num_label_classes, self.num_train_samples_per_sweep)
         self.input_map = {
             self.label: self.reader_train.streams.labels,
             self.input: self.reader_train.streams.features
@@ -144,7 +144,7 @@ class ColorCalibrationModel:
                 plotdata["error"].append(error)
 
     def run_tester(self):
-        self.reader_test = self.create_reader(self.test_file, False, self.input_dim, self.num_label_classes)
+        self.reader_test = self.create_reader(self.test_file, False, self.input_dim, self.num_label_classes, self.num_test_samples)
         test_input_map = {
             self.label: self.reader_test.streams.labels,
             self.input: self.reader_test.streams.features,
