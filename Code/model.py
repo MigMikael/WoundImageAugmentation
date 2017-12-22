@@ -164,6 +164,19 @@ class ColorCalibrationModel:
         diff_R_list = []
         diff_G_list = []
         diff_B_list = []
+        
+        
+        max_LF_R = 0
+        max_LF_G = 0
+        max_LF_B = 0
+        
+        sum_LF_diff_R = 0
+        sum_LF_diff_G = 0
+        sum_LF_diff_B = 0
+        
+        diff_LF_R_list = []
+        diff_LF_G_list = []
+        diff_LF_B_list = []
 
         for i in range(num_minibatches_to_test):
             data = self.reader_test.next_minibatch(test_minibatch_size, input_map=test_input_map)
@@ -186,6 +199,10 @@ class ColorCalibrationModel:
             #print("Labels -----------------------")
             post_temp[0] = [int(x) for x in post_temp[0]]
             #print(post_temp[0])
+            label_feature_diff = abs(pre_temp[0] - post_temp[0])
+            label_feature_diff = label_feature_diff.tolist()
+            with open(self.file_name, 'a') as outfile:
+                    outfile.write("Label-Feature Diff = "+ str(label_feature_diff) + "\n")
 
             prediction = self.z.eval(pre_temp[0])
             prediction_float = np.float32(prediction[0])
@@ -200,14 +217,16 @@ class ColorCalibrationModel:
             rest = rest.tolist()
             #print(type(rest))
             with open(self.file_name, 'a') as outfile:
-                    outfile.write(str(rest) + "\n")
+                    outfile.write("Label-Predict Diff = " + str(rest) + "\n")
             
+            ''' 
+            #percentage of diff
             for index, item in enumerate(rest):
                 p = (item / post_temp[0][index]) * 100
                 #print(str(round(p, 2)) + "%")
                 with open(self.file_name, 'a') as outfile:
                     outfile.write(str(index+1) + ". " + str(round(p, 2)) + "%" + "\n")
-
+            '''
             #print()
             with open(self.file_name, 'a') as outfile:
                     outfile.write("\n")
@@ -221,18 +240,48 @@ class ColorCalibrationModel:
             if (rest[2] > max_B):
                 max_B = rest[2]
                 
+                
+            if (label_feature_diff[0] > max_LF_R):
+                max_LF_R = label_feature_diff[0]
+
+            if (label_feature_diff[1] > max_LF_G):
+                max_LF_G = label_feature_diff[1]
+
+            if (label_feature_diff[2] > max_LF_B):
+                max_LF_B = label_feature_diff[2]
+                
             sum_diff_R += rest[0]
             sum_diff_G += rest[1]
             sum_diff_B += rest[2]
             
+            sum_LF_diff_R += label_feature_diff[0]
+            sum_LF_diff_G += label_feature_diff[1]
+            sum_LF_diff_B += label_feature_diff[2]
+            
             diff_R_list.append(rest[0])
             diff_G_list.append(rest[1])
             diff_B_list.append(rest[2])
+            
+            diff_LF_R_list.append(label_feature_diff[0])
+            diff_LF_G_list.append(label_feature_diff[1])
+            diff_LF_B_list.append(label_feature_diff[2])
 
+            
+        with open(self.file_name, 'a') as outfile:
+            outfile.write("max Label-Feature diff (R G B) : " + str(max_LF_R) + " " + str(max_LF_G) + " " + str(max_LF_B) + " \n")
+            
         #print("max diff R G B : ", max_R, max_G, max_B)
         with open(self.file_name, 'a') as outfile:
-            outfile.write("max diff R G B : " + str(max_R) + " " + str(max_G) + " " + str(max_B) + " \n")
+            outfile.write("max Label-Predict diff (R G B) : " + str(max_R) + " " + str(max_G) + " " + str(max_B) + " \n")
             
+        avg_LF_diff_R = sum_LF_diff_R / self.num_test_samples
+        avg_LF_diff_G = sum_LF_diff_G / self.num_test_samples
+        avg_LF_diff_B = sum_LF_diff_B / self.num_test_samples
+        
+        avg_LF_diff_R = round(avg_LF_diff_R, 4)
+        avg_LF_diff_G = round(avg_LF_diff_G, 4)
+        avg_LF_diff_B = round(avg_LF_diff_B, 4)
+        
         avg_diff_R = sum_diff_R / self.num_test_samples
         avg_diff_G = sum_diff_G / self.num_test_samples
         avg_diff_B = sum_diff_B / self.num_test_samples
@@ -241,9 +290,12 @@ class ColorCalibrationModel:
         avg_diff_G = round(avg_diff_G, 4)
         avg_diff_B = round(avg_diff_B, 4)
         
+        with open(self.file_name, 'a') as outfile:
+            outfile.write("avg Label-Feature diff R G B : " + str(avg_LF_diff_R) + " " + str(avg_LF_diff_G) + " " + str(avg_LF_diff_B) + " \n")
+        
         #print("avg diff R G B : ", avg_diff_R, avg_diff_G, avg_diff_B)
         with open(self.file_name, 'a') as outfile:
-            outfile.write("avg diff R G B : " + str(avg_diff_R) + " " + str(avg_diff_G) + " " + str(avg_diff_B) + " \n")
+            outfile.write("avg Label-Predict diff R G B : " + str(avg_diff_R) + " " + str(avg_diff_G) + " " + str(avg_diff_B) + " \n")
             
         R_sd = self.cal_standard_deviation(diff_R_list, avg_diff_R)
         G_sd = self.cal_standard_deviation(diff_G_list, avg_diff_G)
