@@ -80,7 +80,8 @@ class ColorCalibrationModel:
         self.z = self.create_model(self.input, self.hidden_layers_dim)
         self.loss = cntk.squared_error(self.z, self.label) #
 
-        self.learning_rate = [0.0002]*10000 + [0.00002]*10000 + [0.000012]*5000 + [0.00001]*930
+        #self.learning_rate = [0.0002]*10000 + [0.00002]*10000 + [0.000012]*5000 + [0.00001]*930
+        self.learning_rate = learning_rate
         self.lr_schedule = cntk.learning_rate_schedule(self.learning_rate, cntk.UnitType.minibatch)
 
         self.learner = cntk.sgd(self.z.parameters, self.lr_schedule)
