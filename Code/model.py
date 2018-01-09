@@ -202,8 +202,8 @@ class ColorCalibrationModel:
             #print(post_temp[0])
             label_feature_diff = abs(pre_temp[0] - post_temp[0])
             label_feature_diff = label_feature_diff.tolist()
-            with open(self.file_name, 'a') as outfile:
-                    outfile.write("Label-Feature Diff = "+ str(label_feature_diff) + "\n")
+            #with open(self.file_name, 'a') as outfile:
+                    #outfile.write("Label-Feature Diff = "+ str(label_feature_diff) + "\n")
 
             prediction = self.z.eval(pre_temp[0])
             prediction_float = np.float32(prediction[0])
@@ -217,8 +217,8 @@ class ColorCalibrationModel:
             #print(rest)
             rest = rest.tolist()
             #print(type(rest))
-            with open(self.file_name, 'a') as outfile:
-                    outfile.write("Label-Predict Diff = " + str(rest) + "\n")
+            #with open(self.file_name, 'a') as outfile:
+                    #outfile.write("Label-Predict Diff = " + str(rest) + "\n")
             
             ''' 
             #percentage of diff
@@ -229,8 +229,8 @@ class ColorCalibrationModel:
                     outfile.write(str(index+1) + ". " + str(round(p, 2)) + "%" + "\n")
             '''
             #print()
-            with open(self.file_name, 'a') as outfile:
-                    outfile.write("\n")
+            #with open(self.file_name, 'a') as outfile:
+                    #outfile.write("\n")
 
             if (rest[0] > max_R):
                 max_R = rest[0]
