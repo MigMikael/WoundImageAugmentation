@@ -4,6 +4,7 @@ import os
 import cntk
 import cntk.learners
 import math
+import matplotlib.pyplot as plt
 
 
 class ColorCalibrationModel:
@@ -80,8 +81,8 @@ class ColorCalibrationModel:
         self.z = self.create_model(self.input, self.hidden_layers_dim)
         self.loss = cntk.squared_error(self.z, self.label) #
 
-        #self.learning_rate = [0.0002]*10000 + [0.00002]*10000 + [0.000012]*5000 + [0.00001]*930
-        self.learning_rate = learning_rate
+        self.learning_rate = [0.0002]*5000000 + [0.00002]*3000000 + [0.000012]*3000000 + [0.00001]*628288
+        #self.learning_rate = learning_rate
         self.lr_schedule = cntk.learning_rate_schedule(self.learning_rate, cntk.UnitType.minibatch)
 
         self.learner = cntk.sgd(self.z.parameters, self.lr_schedule)
@@ -100,8 +101,8 @@ class ColorCalibrationModel:
             self.label: self.reader_train.streams.labels,
             self.input: self.reader_train.streams.features
         }
-
-    def moving_averate(self, a, w=5):
+    
+    def moving_average(self, a, w=5):
         if len(a) < w:
             return a[:]
         return [val if idx < w else sum(a[(idx - w):idx]) / w for idx, val in enumerate(a)]
@@ -116,8 +117,7 @@ class ColorCalibrationModel:
             if verbose:
                 #print("Minibatch: {0}, Loss: {1:.4f}, Error: {2:.2f}%".format(mb, training_loss, eval_error * 100))
                 with open(file_name, 'a') as outfile:
-                    outfile.write(
-                        "Minibatch: {0}, Loss: {1:.4f}, Error: {2:.2f}% \n".format(mb, training_loss, eval_error * 100))
+                    outfile.write("Minibatch: {0}, Loss: {1:.4f}, Error: {2:.2f}% \n".format(mb, training_loss, eval_error * 100))
 
         return mb, training_loss, eval_error
 
@@ -129,7 +129,8 @@ class ColorCalibrationModel:
 
         with open(self.file_name, 'a') as outfile:
             outfile.write("hidden_layer_dim = " + str(self.hidden_layers_dim) + "\n")
-            outfile.write("learning_rate = " + str(self.learning_rate) + "\n")
+            #outfile.write("learning_rate = " + str(self.learning_rate) + "\n")
+            outfile.write("learning_rate = " + "[0.0002]*5000000 + [0.00002]*3000000 + [0.000012]*3000000 + [0.00001]*628288" + "\n")
             outfile.write("minibatch_size = " + str(self.minibatch_size) + "\n")
             outfile.write("num_train_samples_per_sweep = " + str(self.num_train_samples_per_sweep) + "\n")
             outfile.write("num_test_samples = " + str(self.num_test_samples) + "\n")
@@ -140,9 +141,31 @@ class ColorCalibrationModel:
 
             batchsize, loss, error = self.print_training_progress(self.trainer, i, training_progress_output_freq, verbose=1, file_name=self.file_name)
             if not (loss == "NA" or error == "NA"):
-                plotdata["batchsize"].append(batchsize)
-                plotdata["loss"].append(loss)
-                plotdata["error"].append(error)
+                if i % 10000 == 0:
+                    plotdata["batchsize"].append(batchsize)
+                    plotdata["loss"].append(loss)
+                    plotdata["error"].append(error)
+                
+        #plotdata["avgloss"] = self.moving_average(plotdata["loss"])
+        #plotdata["avgerror"] = self.moving_average(plotdata["error"])
+        
+        plt.figure(1)
+        
+        plt.subplot(211)
+        plt.plot(plotdata["batchsize"], plotdata["loss"], 'b--')
+        plt.xlabel('Minibatch number')
+        plt.ylabel('Loss')
+        plt.title('Minibatch run vs. Training loss')
+        #plt.show()
+
+        plt.subplot(212)
+        plt.plot(plotdata["batchsize"], plotdata["error"], 'r--')
+        plt.xlabel('Minibatch number')
+        plt.ylabel('Label Prediction Error')
+        plt.title('Minibatch run vs. Label Prediction Error')
+        #plt.show()
+        fig_name = self.file_name.replace("txt", "")
+        plt.savefig(fig_name + '_graph.png')
 
     def run_tester(self):
         self.reader_test = self.create_reader(self.test_file, False, self.input_dim, self.num_label_classes, self.num_test_samples)
@@ -292,11 +315,11 @@ class ColorCalibrationModel:
         avg_diff_B = round(avg_diff_B, 4)
         
         with open(self.file_name, 'a') as outfile:
-            outfile.write("avg Label-Feature diff R G B : " + str(avg_LF_diff_R) + " " + str(avg_LF_diff_G) + " " + str(avg_LF_diff_B) + " \n")
+            outfile.write("avg Label-Feature diff (R G B) : " + str(avg_LF_diff_R) + " " + str(avg_LF_diff_G) + " " + str(avg_LF_diff_B) + " \n")
         
         #print("avg diff R G B : ", avg_diff_R, avg_diff_G, avg_diff_B)
         with open(self.file_name, 'a') as outfile:
-            outfile.write("avg Label-Predict diff R G B : " + str(avg_diff_R) + " " + str(avg_diff_G) + " " + str(avg_diff_B) + " \n")
+            outfile.write("avg Label-Predict diff (R G B) : " + str(avg_diff_R) + " " + str(avg_diff_G) + " " + str(avg_diff_B) + " \n")
             
         R_sd = self.cal_standard_deviation(diff_R_list, avg_diff_R)
         G_sd = self.cal_standard_deviation(diff_G_list, avg_diff_G)
@@ -308,7 +331,7 @@ class ColorCalibrationModel:
         
         #print("Standard Deviation diff R G B : ", R_sd ,G_sd ,B_sd)
         with open(self.file_name, 'a') as outfile:
-            outfile.write("Standard Deviation diff R G B : " + str(R_sd) + " " + str(G_sd) + " " + str(B_sd) + "\n")
+            outfile.write("Standard Deviation diff (R G B) : " + str(R_sd) + " " + str(G_sd) + " " + str(B_sd) + "\n")
 
     def save_model(self, path):
         self.z.save(path)
