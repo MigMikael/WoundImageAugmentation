@@ -81,7 +81,7 @@ class ColorCalibrationModel:
         self.z = self.create_model(self.input, self.hidden_layers_dim)
         self.loss = cntk.squared_error(self.z, self.label) #
 
-        self.learning_rate = [0.0002]*5000000 + [0.00002]*3000000 + [0.000012]*3000000 + [0.00001]*628288
+        self.learning_rate = [0.0002]*5000000 + [0.00002]*4000000 + [0.00001]*2000000 + [0.000005]*628288
         #self.learning_rate = learning_rate
         self.lr_schedule = cntk.learning_rate_schedule(self.learning_rate, cntk.UnitType.minibatch)
 
@@ -102,10 +102,12 @@ class ColorCalibrationModel:
             self.input: self.reader_train.streams.features
         }
     
+    '''
     def moving_average(self, a, w=5):
         if len(a) < w:
             return a[:]
         return [val if idx < w else sum(a[(idx - w):idx]) / w for idx, val in enumerate(a)]
+    '''
 
     def print_training_progress(self, trainer, mb, frequency, file_name, verbose=1):
         training_loss = "N/A"
@@ -130,7 +132,7 @@ class ColorCalibrationModel:
         with open(self.file_name, 'a') as outfile:
             outfile.write("hidden_layer_dim = " + str(self.hidden_layers_dim) + "\n")
             #outfile.write("learning_rate = " + str(self.learning_rate) + "\n")
-            outfile.write("learning_rate = " + "[0.0002]*5000000 + [0.00002]*3000000 + [0.000012]*3000000 + [0.00001]*628288" + "\n")
+            outfile.write("learning_rate = " + "[0.0002]*5000000 + [0.00002]*4000000 + [0.00001]*2000000 + [0.000005]*628288" + "\n")
             outfile.write("minibatch_size = " + str(self.minibatch_size) + "\n")
             outfile.write("num_train_samples_per_sweep = " + str(self.num_train_samples_per_sweep) + "\n")
             outfile.write("num_test_samples = " + str(self.num_test_samples) + "\n")
@@ -141,7 +143,7 @@ class ColorCalibrationModel:
 
             batchsize, loss, error = self.print_training_progress(self.trainer, i, training_progress_output_freq, verbose=1, file_name=self.file_name)
             if not (loss == "NA" or error == "NA"):
-                if i % 10000 == 0:
+                if i % 5000 == 0:
                     plotdata["batchsize"].append(batchsize)
                     plotdata["loss"].append(loss)
                     plotdata["error"].append(error)
@@ -149,7 +151,7 @@ class ColorCalibrationModel:
         #plotdata["avgloss"] = self.moving_average(plotdata["loss"])
         #plotdata["avgerror"] = self.moving_average(plotdata["error"])
         
-        plt.figure(1)
+        plt.figure(num=1, figsize=(12,9), dpi=200)
         
         plt.subplot(211)
         plt.plot(plotdata["batchsize"], plotdata["loss"], 'b--')
