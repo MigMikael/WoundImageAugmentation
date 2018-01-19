@@ -779,3 +779,8 @@ Minibatch: 386000, Loss: 361.7773, Error: 36177.73%
 Minibatch: 386500, Loss: 317.1868, Error: 31718.68% 
 Minibatch: 387000, Loss: 327.4067, Error: 32740.67% 
 Minibatch: 387500, Loss: 314.6262, Error: 31462.62% 
+max Label-Feature diff (R G B) : 220.0 87.0 115.0 
+max Label-Predict diff (R G B) : 177.0 71.0 89.0 
+avg Label-Feature diff (R G B) : 40.3032 25.8831 27.1621 
+avg Label-Predict diff (R G B) : 7.4204 6.9031 9.5713 
+Standard Deviation diff (R G B) : 6.4125 5.7465 7.9723
