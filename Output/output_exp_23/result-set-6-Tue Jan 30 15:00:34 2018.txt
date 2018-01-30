@@ -1,0 +1,21 @@
+hidden_layer_dim = 9
+learning_rate = [0.0002]*100000 + [0.00002]*80000 + [0.00001]*40000 + [0.000005]*36752
+minibatch_size = 500
+num_train_samples_per_sweep = 256752
+num_test_samples = 64188
+Minibatch: 0, Loss: 64463.2240, Error: 6446322.40% 
+Minibatch: 500, Loss: 431.0109, Error: 43101.09% 
+Minibatch: 1000, Loss: 567.7249, Error: 56772.49% 
+Minibatch: 1500, Loss: 539.5019, Error: 53950.19% 
+Minibatch: 2000, Loss: 566.8574, Error: 56685.74% 
+Minibatch: 2500, Loss: 397.4057, Error: 39740.57% 
+Minibatch: 3000, Loss: 423.8414, Error: 42384.14% 
+Minibatch: 3500, Loss: 610.1449, Error: 61014.49% 
+Minibatch: 4000, Loss: 754.6867, Error: 75468.67% 
+Minibatch: 4500, Loss: 518.9737, Error: 51897.37% 
+Minibatch: 5000, Loss: 676.9773, Error: 67697.73% 
+max Label-Feature diff (R G B) : 182.0 140.0 135.0 
+max Label-Predict diff (R G B) : 177.0 155.0 180.0 
+avg Label-Feature diff (R G B) : 39.0579 25.458 27.1053 
+avg Label-Predict diff (R G B) : 8.3431 7.8473 10.4758 
+Standard Deviation diff (R G B) : 9.5543 8.526 9.9195

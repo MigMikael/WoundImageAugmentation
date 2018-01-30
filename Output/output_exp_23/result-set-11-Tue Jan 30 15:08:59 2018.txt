@@ -1,0 +1,28 @@
+hidden_layer_dim = 15
+learning_rate = [0.0002]*100000 + [0.00002]*80000 + [0.00001]*40000 + [0.000005]*36752
+minibatch_size = 300
+num_train_samples_per_sweep = 256752
+num_test_samples = 64188
+Minibatch: 0, Loss: 66584.9333, Error: 6658493.33% 
+Minibatch: 500, Loss: 913.8284, Error: 91382.84% 
+Minibatch: 1000, Loss: 618.9305, Error: 61893.05% 
+Minibatch: 1500, Loss: 433.9825, Error: 43398.25% 
+Minibatch: 2000, Loss: 867.1869, Error: 86718.69% 
+Minibatch: 2500, Loss: 448.5412, Error: 44854.12% 
+Minibatch: 3000, Loss: 877.5665, Error: 87756.65% 
+Minibatch: 3500, Loss: 457.9464, Error: 45794.64% 
+Minibatch: 4000, Loss: 403.4923, Error: 40349.23% 
+Minibatch: 4500, Loss: 719.0433, Error: 71904.33% 
+Minibatch: 5000, Loss: 354.9951, Error: 35499.51% 
+Minibatch: 5500, Loss: 547.9155, Error: 54791.55% 
+Minibatch: 6000, Loss: 396.0273, Error: 39602.73% 
+Minibatch: 6500, Loss: 505.9708, Error: 50597.08% 
+Minibatch: 7000, Loss: 374.4614, Error: 37446.14% 
+Minibatch: 7500, Loss: 512.0431, Error: 51204.31% 
+Minibatch: 8000, Loss: 420.7247, Error: 42072.47% 
+Minibatch: 8500, Loss: 448.5189, Error: 44851.89% 
+max Label-Feature diff (R G B) : 182.0 140.0 135.0 
+max Label-Predict diff (R G B) : 175.0 155.0 181.0 
+avg Label-Feature diff (R G B) : 39.0579 25.458 27.1053 
+avg Label-Predict diff (R G B) : 8.1862 7.2631 10.161 
+Standard Deviation diff (R G B) : 9.4241 8.2281 9.7302

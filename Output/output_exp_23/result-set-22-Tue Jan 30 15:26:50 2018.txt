@@ -1,0 +1,62 @@
+hidden_layer_dim = 27
+learning_rate = [0.0002]*100000 + [0.00002]*80000 + [0.00001]*40000 + [0.000005]*36752
+minibatch_size = 100
+num_train_samples_per_sweep = 256752
+num_test_samples = 64188
+Minibatch: 0, Loss: 69383.7900, Error: 6938379.00% 
+Minibatch: 500, Loss: 569.0900, Error: 56909.00% 
+Minibatch: 1000, Loss: 969.3255, Error: 96932.55% 
+Minibatch: 1500, Loss: 1406.9041, Error: 140690.41% 
+Minibatch: 2000, Loss: 962.1473, Error: 96214.73% 
+Minibatch: 2500, Loss: 459.7218, Error: 45972.18% 
+Minibatch: 3000, Loss: 745.5092, Error: 74550.92% 
+Minibatch: 3500, Loss: 893.8452, Error: 89384.52% 
+Minibatch: 4000, Loss: 404.9972, Error: 40499.72% 
+Minibatch: 4500, Loss: 507.6227, Error: 50762.27% 
+Minibatch: 5000, Loss: 308.1440, Error: 30814.40% 
+Minibatch: 5500, Loss: 399.1012, Error: 39910.12% 
+Minibatch: 6000, Loss: 894.2052, Error: 89420.52% 
+Minibatch: 6500, Loss: 557.3218, Error: 55732.18% 
+Minibatch: 7000, Loss: 671.9889, Error: 67198.89% 
+Minibatch: 7500, Loss: 418.6279, Error: 41862.79% 
+Minibatch: 8000, Loss: 1193.4245, Error: 119342.45% 
+Minibatch: 8500, Loss: 548.9998, Error: 54899.98% 
+Minibatch: 9000, Loss: 596.6190, Error: 59661.90% 
+Minibatch: 9500, Loss: 843.6105, Error: 84361.05% 
+Minibatch: 10000, Loss: 807.9952, Error: 80799.52% 
+Minibatch: 10500, Loss: 423.3956, Error: 42339.56% 
+Minibatch: 11000, Loss: 393.4098, Error: 39340.98% 
+Minibatch: 11500, Loss: 745.2310, Error: 74523.10% 
+Minibatch: 12000, Loss: 458.1103, Error: 45811.03% 
+Minibatch: 12500, Loss: 398.4599, Error: 39845.99% 
+Minibatch: 13000, Loss: 485.8259, Error: 48582.59% 
+Minibatch: 13500, Loss: 1234.8988, Error: 123489.88% 
+Minibatch: 14000, Loss: 367.2864, Error: 36728.64% 
+Minibatch: 14500, Loss: 320.8154, Error: 32081.54% 
+Minibatch: 15000, Loss: 356.5340, Error: 35653.40% 
+Minibatch: 15500, Loss: 473.4991, Error: 47349.91% 
+Minibatch: 16000, Loss: 436.2962, Error: 43629.62% 
+Minibatch: 16500, Loss: 397.1160, Error: 39711.60% 
+Minibatch: 17000, Loss: 430.0665, Error: 43006.65% 
+Minibatch: 17500, Loss: 773.1555, Error: 77315.55% 
+Minibatch: 18000, Loss: 339.3280, Error: 33932.80% 
+Minibatch: 18500, Loss: 522.6891, Error: 52268.91% 
+Minibatch: 19000, Loss: 636.1750, Error: 63617.50% 
+Minibatch: 19500, Loss: 739.3564, Error: 73935.64% 
+Minibatch: 20000, Loss: 1185.6085, Error: 118560.85% 
+Minibatch: 20500, Loss: 417.9476, Error: 41794.76% 
+Minibatch: 21000, Loss: 419.7329, Error: 41973.29% 
+Minibatch: 21500, Loss: 431.6398, Error: 43163.98% 
+Minibatch: 22000, Loss: 402.7818, Error: 40278.18% 
+Minibatch: 22500, Loss: 632.3696, Error: 63236.96% 
+Minibatch: 23000, Loss: 414.8620, Error: 41486.20% 
+Minibatch: 23500, Loss: 511.1991, Error: 51119.91% 
+Minibatch: 24000, Loss: 365.5452, Error: 36554.52% 
+Minibatch: 24500, Loss: 373.0312, Error: 37303.12% 
+Minibatch: 25000, Loss: 626.7696, Error: 62676.96% 
+Minibatch: 25500, Loss: 510.8684, Error: 51086.84% 
+max Label-Feature diff (R G B) : 182.0 140.0 135.0 
+max Label-Predict diff (R G B) : 173.0 158.0 179.0 
+avg Label-Feature diff (R G B) : 39.0579 25.458 27.1053 
+avg Label-Predict diff (R G B) : 8.1454 6.9951 9.8896 
+Standard Deviation diff (R G B) : 9.1235 8.1778 9.8114
