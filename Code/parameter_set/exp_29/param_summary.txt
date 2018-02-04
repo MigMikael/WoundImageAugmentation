@@ -1,0 +1,3 @@
+hidden layer dim : [6, 9, 12, 15, 18, 21, 24, 27, 30]
+learning_rate_list : [2e-05]
+minibatch_size : [300, 500]
