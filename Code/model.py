@@ -81,7 +81,7 @@ class ColorCalibrationModel:
         self.z = self.create_model(self.input, self.hidden_layers_dim)
         self.loss = cntk.squared_error(self.z, self.label) #
 
-        self.learning_rate = [0.0002]*795184 + [0.00002]*2000000 + [0.00001]*4000000 + [0.000005]*5000000
+        self.learning_rate = [0.0002]*5000000 + [0.00002]*4000000 + [0.00001]*2000000 + [0.000005]*734128
         #self.learning_rate = learning_rate
         self.lr_schedule = cntk.learning_rate_schedule(self.learning_rate, cntk.UnitType.minibatch)
 
@@ -132,7 +132,7 @@ class ColorCalibrationModel:
         with open(self.file_name, 'a') as outfile:
             outfile.write("hidden_layer_dim = " + str(self.hidden_layers_dim) + "\n")
             #outfile.write("learning_rate = " + str(self.learning_rate) + "\n")
-            outfile.write("learning_rate = " + "[0.0002]*795184 + [0.00002]*2000000 + [0.00001]*4000000 + [0.000005]*5000000" + "\n")
+            outfile.write("learning_rate = " + "[0.0002]*5000000 + [0.00002]*4000000 + [0.00001]*2000000 + [0.000005]*734128" + "\n")
             outfile.write("minibatch_size = " + str(self.minibatch_size) + "\n")
             outfile.write("num_train_samples_per_sweep = " + str(self.num_train_samples_per_sweep) + "\n")
             outfile.write("num_test_samples = " + str(self.num_test_samples) + "\n")
