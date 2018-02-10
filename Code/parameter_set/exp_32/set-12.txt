@@ -1,0 +1,5 @@
+hidden_layers_dim=21
+learning_rate=2e-05
+minibatch_size=500
+num_train_samples_per_sweep=11848824
+num_test_samples=2962206
